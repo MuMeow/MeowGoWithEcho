@@ -1,0 +1,11 @@
+{
+    "supersecret":"MuMuMuMuMuMuMuMuMuMeowwwwwwwwwwwwwwwwwwwwwwwwwWWWWWWWWWWWWWWWWWWWWWWWWWWWW!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!",
+    "mysql": {
+        "type":"mysql",
+        "host":"localhost",
+        "port": "3306",
+        "username": "user",
+        "password": "password",
+        "dbname":"meow_db"
+    }
+}
