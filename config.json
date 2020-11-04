@@ -6,6 +6,6 @@
         "port": "3306",
         "username": "user",
         "password": "password",
-        "dbname":"meow_db"
+        "dbname":"meow_test"
     }
 }

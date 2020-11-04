@@ -41,7 +41,7 @@ func main() {
 		e.Logger.Panic(err.Error())
 	}
 
-	row, err := sqlConnection.QueryContext(context.TODO(), "SELECT * FROM `meow__lmw`")
+	row, err := sqlConnection.QueryContext(context.TODO(), "SELECT * FROM `meow__table`")
 
 	if err != nil {
 		e.Logger.Panic(err.Error())
@@ -70,9 +70,10 @@ func main() {
 
 		for a := range getType {
 			columnType := getType[a].DatabaseTypeName()
+			e.Logger.Print(columnType)
 			if columnType == "VARCHAR" || columnType == "NVARCHAR" || columnType == "TEXT" {
 				newMeow[a] = string(newMeow[a].([]byte))
-			} else if columnType == "BOOL" {
+			} else if columnType == "BOOL" || columnType == "TINYINT" {
 				newMeow[a], _ = strconv.ParseBool(string(newMeow[a].([]byte)))
 			} else {
 				newMeow[a], _ = strconv.Atoi(string(newMeow[a].([]byte)))
