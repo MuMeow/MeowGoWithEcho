@@ -16,8 +16,6 @@ func main() {
 
 	e := echo.New()
 
-	defer e.Close()
-
 	viper.SetConfigFile(`config.json`)
 
 	err := viper.ReadInConfig()
@@ -41,52 +39,10 @@ func main() {
 		e.Logger.Panic(err.Error())
 	}
 
-	row, err := sqlConnection.QueryContext(context.TODO(), "SELECT * FROM `meow__table`")
-
-	if err != nil {
-		e.Logger.Panic(err.Error())
-	}
-
-	var getMeow []interface{}
-
-	log.Print(row.Columns())
-
-	getType, _ := row.ColumnTypes()
-
-	for row.Next() {
-		newMeow := make([]interface{}, 4)
-
-		newMeowPointer := make([]interface{}, 4)
-
-		for a := range newMeow {
-			newMeowPointer[a] = &newMeow[a]
-		}
-
-		err = row.Scan(newMeowPointer...)
-
-		if err != nil {
-			e.Logger.Panic(err.Error())
-		}
-
-		for a := range getType {
-			columnType := getType[a].DatabaseTypeName()
-			e.Logger.Print(columnType)
-			if columnType == "VARCHAR" || columnType == "NVARCHAR" || columnType == "TEXT" {
-				newMeow[a] = string(newMeow[a].([]byte))
-			} else if columnType == "BOOL" || columnType == "TINYINT" {
-				newMeow[a], _ = strconv.ParseBool(string(newMeow[a].([]byte)))
-			} else {
-				newMeow[a], _ = strconv.Atoi(string(newMeow[a].([]byte)))
-			}
-		}
-
-		getMeow = append(getMeow, newMeow)
-	}
-	e.Logger.Print(getMeow)
-
-	log.Print("Meow?")
-
-	defer sqlConnection.Close()
+	defer func() {
+		sqlConnection.Close()
+		e.Close()
+	}()
 
 	e.Use(middleware.CORSWithConfig(middleware.CORSConfig{
 		AllowOrigins: []string{""},
@@ -96,6 +52,61 @@ func main() {
 
 	e.GET("/meow", func(c echo.Context) error {
 		return c.String(200, "Meowwwwwwwwwwwww!!!!!!!!!!!!!!!!!!!!")
+	})
+
+	e.GET("/test", func(c echo.Context) error {
+
+		row, err := sqlConnection.QueryContext(context.TODO(), "SELECT * FROM `meow__lmw`")
+
+		if err != nil {
+			e.Logger.Panic(err.Error())
+		}
+
+		var getMeow []map[string]interface{}
+
+		allColumn, _ := row.Columns()
+
+		log.Print(allColumn)
+
+		getType, _ := row.ColumnTypes()
+
+		for row.Next() {
+			newMeow := make([]interface{}, len(allColumn))
+
+			newMeowPointer := make([]interface{}, len(allColumn))
+
+			for a := range newMeow {
+				newMeowPointer[a] = &newMeow[a]
+			}
+
+			err = row.Scan(newMeowPointer...)
+
+			if err != nil {
+				e.Logger.Panic(err.Error())
+			}
+
+			resultMeow := make(map[string]interface{}, 0)
+
+			for a := range getType {
+				columnType := getType[a].DatabaseTypeName()
+				e.Logger.Print(columnType)
+				if columnType == "VARCHAR" || columnType == "NVARCHAR" || columnType == "TEXT" {
+					resultMeow[allColumn[a]] = string(newMeow[a].([]byte))
+				} else if columnType == "BOOL" || columnType == "TINYINT" {
+					resultMeow[allColumn[a]], _ = strconv.ParseBool(string(newMeow[a].([]byte)))
+				} else {
+					resultMeow[allColumn[a]], _ = strconv.Atoi(string(newMeow[a].([]byte)))
+				}
+			}
+
+			getMeow = append(getMeow, resultMeow)
+		}
+
+		// resultByte, _ := json.Marshal(getMeow)
+		// var result []interface{}
+		// json.Unmarshal(resultByte, &result)
+		e.Logger.Print(getMeow[0]["name"])
+		return c.JSON(200, getMeow)
 	})
 
 	e.GET("/secret", func(c echo.Context) error {
